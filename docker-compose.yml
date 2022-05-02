@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  nginx:
+    build: docker/nginx
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./typecho:/var/www/html
+      - ./nginx/cert:/etc/nginx/cert
+      - ./nginx/conf:/etc/nginx/sites-enabled
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - php-fpm
+    volumes_from:
+      - php-fpm
+
+  php-fpm:
+    build: docker/php-fpm
+    restart: always
+    volumes:
+      - ./typecho:/var/www/html
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      - mysql
+    volumes_from:
+      - mysql
+
+  mysql:
+    build: docker/mysql
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=__PASSWORD__
+      - MYSQL_DATABASE=__DATABASE__
+      - MYSQL_USER=__USER__
+      - MYSQL_PASSWORD=__PASSWORD__
+    volumes:
+      - ./mysql:/var/lib/mysql
